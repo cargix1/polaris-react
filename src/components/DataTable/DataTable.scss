@@ -26,7 +26,7 @@ $breakpoint: 768px;
   }
 
   .ScrollContainer {
-    margin-left: rem($fixed-column-width);
+    padding-left: rem($fixed-column-width);
   }
 }
 
@@ -58,7 +58,7 @@ $breakpoint: 768px;
 .ScrollContainer {
   overflow-x: auto;
   // account for a mysterious gap in Safari when not collapsed
-  margin-left: rem(140px);
+  padding-left: rem($fixed-column-width);
   -webkit-overflow-scrolling: touch;
 }
 
@@ -96,6 +96,7 @@ $breakpoint: 768px;
 
 .Cell {
   padding: spacing();
+  background-color: color('white');
   border-bottom: border-width() solid color('sky', 'light');
   white-space: nowrap;
   text-align: left;
