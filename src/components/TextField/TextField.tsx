@@ -99,6 +99,8 @@ export interface BaseProps {
   ariaAutocomplete?: string;
   /** Indicates whether or not the character count should be displayed */
   showCharacterCount?: boolean;
+  /** Indicates whether or not the text should be aligned to the right */
+  alignRight?: boolean;
   /** Callback when value is changed */
   onChange?(value: string, id: string): void;
   /** Callback when input is focused */
@@ -157,41 +159,42 @@ class TextField extends React.PureComponent<CombinedProps, State> {
 
   render() {
     const {
-      id = this.state.id,
-      value,
-      placeholder,
-      disabled,
-      readOnly,
-      role,
-      autoFocus,
-      type,
-      name,
-      error,
-      multiline,
-      connectedRight,
-      connectedLeft,
-      label,
-      labelAction,
-      labelHidden,
-      helpText,
-      prefix,
-      suffix,
-      onFocus,
-      onBlur,
-      autoComplete,
-      min,
-      max,
-      step,
-      minLength,
-      maxLength,
-      spellCheck,
-      pattern,
-      ariaOwns,
+      alignRight,
       ariaActiveDescendant,
       ariaAutocomplete,
       ariaControls,
-      showCharacterCount,
+      ariaOwns,
+      autoComplete,
+      autoFocus,
+      connectedLeft,
+      connectedRight,
+      disabled,
+      error,
+      helpText,
+      id = this.state.id,
+      label,
+      labelAction,
+      labelHidden,
+      max,
+      maxLength,
+      min,
+      minLength,
+      multiline,
+      name,
+      onBlur,
+      onFocus,
+      pattern,
+      placeholder,
       polaris: {intl},
+      prefix,
+      readOnly,
+      role,
+      showCharacterCount,
+      spellCheck,
+      step,
+      suffix,
+      type,
+      value,
     } = this.props;
 
     const normalizedValue = value != null ? value : '';
@@ -292,6 +295,7 @@ class TextField extends React.PureComponent<CombinedProps, State> {
 
     const inputClassName = classNames(
       styles.Input,
+      alignRight && styles['Input-alignRight'],
       suffix && styles['Input-suffixed'],
     );
 
