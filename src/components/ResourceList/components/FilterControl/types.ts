@@ -42,7 +42,7 @@ export interface FilterDateSelector<FilterKeys = {}>
   type: FilterType.DateSelector;
   minKey: string;
   maxKey: string;
-  dateOptionType?: 'past' | 'future' | 'full';
+  dateOptionType?: 'past' | 'future' | 'full' | 'specific';
 }
 
 export type Filter<FilterKeys = {}> =

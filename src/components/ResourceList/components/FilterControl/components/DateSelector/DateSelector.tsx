@@ -13,7 +13,7 @@ import styles from './DateSelector.scss';
 
 const VALID_DATE_REGEX = /^\d{4}-\d{1,2}-\d{1,2}$/;
 
-type DateOptionType = 'past' | 'future' | 'full';
+type DateOptionType = 'past' | 'future' | 'full' | 'specific';
 
 export interface Props {
   dateOptionType?: DateOptionType;
@@ -37,6 +37,7 @@ interface State {
 export type CombinedProps = Props & WithAppProviderProps;
 
 export enum DateFilterOption {
+  SpecificDate = 'specific',
   PastWeek = 'past_week',
   PastMonth = 'past_month',
   PastQuarter = 'past_quarter',
