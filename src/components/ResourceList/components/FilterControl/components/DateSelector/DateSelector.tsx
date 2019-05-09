@@ -37,7 +37,7 @@ interface State {
 export type CombinedProps = Props & WithAppProviderProps;
 
 export enum DateFilterOption {
-  SpecificDate = 'specific',
+  SpecificDate = 'specific_date',
   PastWeek = 'past_week',
   PastMonth = 'past_month',
   PastQuarter = 'past_quarter',
@@ -225,6 +225,21 @@ class DateSelector extends React.PureComponent<CombinedProps, State> {
     ];
   }
 
+  private get dateSpecificOptions() {
+    const {
+      polaris: {intl},
+    } = this.props;
+
+    return [
+      {
+        value: DateFilterOption.SpecificDate,
+        label: intl.translate(
+          'Polaris.ResourceList.DateSelector.SelectOptions.SpecificDate',
+        ),
+      },
+    ];
+  }
+
   private get dateOptionTypes() {
     return {
       past: [...this.datePastOptions, ...this.dateComparatorOptions],
@@ -234,6 +249,7 @@ class DateSelector extends React.PureComponent<CombinedProps, State> {
         ...this.dateFutureOptions,
         ...this.dateComparatorOptions,
       ],
+      specific: [...this.dateSpecificOptions],
     };
   }
 
