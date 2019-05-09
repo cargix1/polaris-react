@@ -192,6 +192,7 @@
     "lodash": "^4.17.4",
     "prop-types": "^15.6.1",
     "react-transition-group": "^2.4.0",
+    "tophat": "^1.0.3",
     "tslib": "^1.9.3"
   }
 }
