@@ -169,10 +169,24 @@ export class FilterControl extends React.Component<CombinedProps> {
     const {filters = []} = this.props;
 
     const filter = filters.find((filter: any) => {
-      const {minKey, maxKey, operatorText} = filter;
+      const {
+        minKey,
+        maxKey,
+        specificDateKey,
+        specificRangeKey,
+        operatorText,
+      } = filter;
 
       if (minKey || maxKey) {
         return filter.key === key || minKey === key || maxKey === key;
+      }
+
+      if (specificRangeKey) {
+        return filter.key === key || specificRangeKey === key;
+      }
+
+      if (specificDateKey) {
+        return filter.key === key || specificDateKey === key;
       }
 
       if (operatorText && typeof operatorText !== 'string') {
@@ -237,6 +251,24 @@ export class FilterControl extends React.Component<CombinedProps> {
           : appliedFilter.value;
       }
 
+      if (appliedFilter.key === filter.specificRangeKey) {
+        return intl.translate(
+          'Polaris.ResourceList.DateSelector.FilterLabelForValue.within_specific_range',
+          {
+            date: formatDateForLabelDisplay(appliedFilter.value),
+          },
+        );
+      }
+
+      if (appliedFilter.key === filter.specificDateKey) {
+        return intl.translate(
+          'Polaris.ResourceList.DateSelector.FilterLabelForValue.specific_date',
+          {
+            date: formatDateForLabelDisplay(appliedFilter.value),
+          },
+        );
+      }
+
       if (appliedFilter.key === filter.maxKey) {
         return intl.translate(
           'Polaris.ResourceList.DateSelector.FilterLabelForValue.on_or_before',
@@ -278,6 +310,20 @@ function findOperatorLabel(filter: Filter, appliedFilter: AppliedFilter) {
   if (
     filter.type === FilterType.DateSelector &&
     (appliedFilter.key === filter.minKey || appliedFilter.key === filter.maxKey)
+  ) {
+    return '';
+  }
+
+  if (
+    filter.type === FilterType.DateSelector &&
+    appliedFilter.key === filter.specificDateKey
+  ) {
+    return '';
+  }
+
+  if (
+    filter.type === FilterType.DateSelector &&
+    appliedFilter.key === filter.specificRangeKey
   ) {
     return '';
   }

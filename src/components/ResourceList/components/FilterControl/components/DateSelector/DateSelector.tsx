@@ -13,7 +13,7 @@ import styles from './DateSelector.scss';
 
 const VALID_DATE_REGEX = /^\d{4}-\d{1,2}-\d{1,2}$/;
 
-type DateOptionType = 'past' | 'future' | 'full' | 'specific';
+type DateOptionType = 'past' | 'future' | 'full' | 'zapiet';
 
 export interface Props {
   dateOptionType?: DateOptionType;
@@ -21,12 +21,15 @@ export interface Props {
   filterKey?: string;
   filterMinKey: string;
   filterMaxKey: string;
-  onFilterValueChange(filterValue?: string): void;
+  filterSpecificDateKey: string;
+  filterSpecificRangeKey: string;
+  onFilterValueChange(filterValue?: string | Range): void;
   onFilterKeyChange(filterKey?: string): void;
 }
 
 interface State {
   selectedDate?: Date;
+  selectedEndDate?: Date;
   userInputDate?: string;
   userInputDateError?: string;
   datePickerMonth: Months;
@@ -37,7 +40,6 @@ interface State {
 export type CombinedProps = Props & WithAppProviderProps;
 
 export enum DateFilterOption {
-  SpecificDate = 'specific_date',
   PastWeek = 'past_week',
   PastMonth = 'past_month',
   PastQuarter = 'past_quarter',
@@ -48,6 +50,8 @@ export enum DateFilterOption {
   ComingYear = 'coming_year',
   OnOrBefore = 'on_or_before',
   OnOrAfter = 'on_or_after',
+  OnSpecificDate = 'on_specific_date',
+  WithinSpecificRange = 'within_specific_range',
 }
 
 class DateSelector extends React.PureComponent<CombinedProps, State> {
@@ -63,12 +67,15 @@ class DateSelector extends React.PureComponent<CombinedProps, State> {
       filterKey,
       filterMinKey,
       filterMaxKey,
+      filterSpecificDateKey,
+      filterSpecificRangeKey,
       dateOptionType,
       polaris: {intl},
     } = this.props;
 
     const {
       selectedDate,
+      selectedEndDate,
       datePickerMonth,
       datePickerYear,
       userInputDateError,
@@ -79,35 +86,61 @@ class DateSelector extends React.PureComponent<CombinedProps, State> {
       filterKey,
       filterMinKey,
       filterMaxKey,
+      filterSpecificDateKey,
+      filterSpecificRangeKey,
     );
 
     const showDatePredicate =
       dateFilterOption === DateFilterOption.OnOrBefore ||
-      dateFilterOption === DateFilterOption.OnOrAfter;
+      dateFilterOption === DateFilterOption.OnOrAfter ||
+      dateFilterOption === DateFilterOption.OnOrBefore ||
+      dateFilterOption === DateFilterOption.OnSpecificDate ||
+      dateFilterOption === DateFilterOption.WithinSpecificRange;
+
+    const showManualDateField =
+      dateFilterOption === DateFilterOption.OnOrBefore ||
+      dateFilterOption === DateFilterOption.OnOrAfter ||
+      dateFilterOption === DateFilterOption.OnOrBefore ||
+      dateFilterOption === DateFilterOption.OnSpecificDate;
+
+    const allowRange =
+      dateFilterOption === DateFilterOption.WithinSpecificRange;
+
+    let selectedRange = null;
+
+    if (selectedDate) {
+      selectedRange = {
+        start: selectedDate,
+        end: selectedEndDate ? selectedEndDate : selectedDate,
+      };
+    }
 
     const datePredicateMarkup = showDatePredicate && (
       <React.Fragment>
-        <div className={styles.DateTextField}>
-          <TextField
-            label={intl.translate(
-              'Polaris.ResourceList.DateSelector.dateValueLabel',
-            )}
-            placeholder={intl.translate(
-              'Polaris.ResourceList.DateSelector.dateValuePlaceholder',
-            )}
-            value={this.dateTextFieldValue}
-            error={userInputDateError}
-            prefix={<Icon source={CalendarMinor} color="skyDark" />}
-            autoComplete={false}
-            onChange={this.handleDateFieldChange}
-            onBlur={this.handleDateBlur}
-          />
-        </div>
+        {showManualDateField && (
+          <div className={styles.DateTextField}>
+            <TextField
+              label={intl.translate(
+                'Polaris.ResourceList.DateSelector.dateValueLabel',
+              )}
+              placeholder={intl.translate(
+                'Polaris.ResourceList.DateSelector.dateValuePlaceholder',
+              )}
+              value={this.dateTextFieldValue}
+              error={userInputDateError}
+              prefix={<Icon source={CalendarMinor} color="skyDark" />}
+              autoComplete={false}
+              onChange={this.handleDateFieldChange}
+              onBlur={this.handleDateBlur}
+            />
+          </div>
+        )}
         <div className={styles.DatePicker}>
           <DatePicker
-            selected={selectedDate}
+            selected={selectedRange ? selectedRange : selectedDate}
             month={datePickerMonth}
             year={datePickerYear}
+            allowRange={allowRange}
             onChange={this.handleDatePickerChange}
             onMonthChange={this.handleDatePickerMonthChange}
           />
@@ -154,6 +187,18 @@ class DateSelector extends React.PureComponent<CombinedProps, State> {
         value: DateFilterOption.OnOrAfter,
         label: intl.translate(
           'Polaris.ResourceList.DateSelector.SelectOptions.OnOrAfter',
+        ),
+      },
+      {
+        value: DateFilterOption.OnSpecificDate,
+        label: intl.translate(
+          'Polaris.ResourceList.DateSelector.SelectOptions.OnSpecificDate',
+        ),
+      },
+      {
+        value: DateFilterOption.WithinSpecificRange,
+        label: intl.translate(
+          'Polaris.ResourceList.DateSelector.SelectOptions.WithinSpecificRange',
         ),
       },
     ];
@@ -225,16 +270,22 @@ class DateSelector extends React.PureComponent<CombinedProps, State> {
     ];
   }
 
-  private get dateSpecificOptions() {
+  private get dateZapietOptions() {
     const {
       polaris: {intl},
     } = this.props;
 
     return [
       {
-        value: DateFilterOption.SpecificDate,
+        value: DateFilterOption.OnSpecificDate,
         label: intl.translate(
-          'Polaris.ResourceList.DateSelector.SelectOptions.SpecificDate',
+          'Polaris.ResourceList.DateSelector.SelectOptions.OnSpecificDate',
+        ),
+      },
+      {
+        value: DateFilterOption.WithinSpecificRange,
+        label: intl.translate(
+          'Polaris.ResourceList.DateSelector.SelectOptions.WithinSpecificRange',
         ),
       },
     ];
@@ -249,7 +300,7 @@ class DateSelector extends React.PureComponent<CombinedProps, State> {
         ...this.dateFutureOptions,
         ...this.dateComparatorOptions,
       ],
-      specific: [...this.dateSpecificOptions],
+      zapiet: [...this.dateZapietOptions],
     };
   }
 
@@ -279,10 +330,32 @@ class DateSelector extends React.PureComponent<CombinedProps, State> {
       onFilterKeyChange,
       filterMinKey,
       filterMaxKey,
+      filterSpecificDateKey,
+      filterSpecificRangeKey,
     } = this.props;
     const {initialConsumerFilterKey, selectedDate} = this.state;
 
     if (!initialConsumerFilterKey) {
+      return;
+    }
+
+    if (newOption === DateFilterOption.WithinSpecificRange) {
+      onFilterKeyChange(filterSpecificRangeKey);
+      onFilterValueChange(
+        selectedDate
+          ? stripTimeFromISOString(formatDateForLocalTimezone(selectedDate))
+          : undefined,
+      );
+      return;
+    }
+
+    if (newOption === DateFilterOption.OnSpecificDate) {
+      onFilterKeyChange(filterSpecificDateKey);
+      onFilterValueChange(
+        selectedDate
+          ? stripTimeFromISOString(formatDateForLocalTimezone(selectedDate))
+          : undefined,
+      );
       return;
     }
 
@@ -377,20 +450,37 @@ class DateSelector extends React.PureComponent<CombinedProps, State> {
 
   private handleDateChanged() {
     const {onFilterValueChange} = this.props;
-    const {selectedDate} = this.state;
+    const {selectedDate, selectedEndDate} = this.state;
 
     if (!selectedDate) {
       return;
     }
-    onFilterValueChange(
-      stripTimeFromISOString(formatDateForLocalTimezone(selectedDate)),
+
+    let value = stripTimeFromISOString(
+      formatDateForLocalTimezone(selectedDate),
     );
+
+    if (selectedEndDate) {
+      const endDate = stripTimeFromISOString(
+        formatDateForLocalTimezone(selectedEndDate),
+      );
+      const startDate = stripTimeFromISOString(
+        formatDateForLocalTimezone(selectedDate),
+      );
+
+      if (endDate !== startDate) {
+        value = `${startDate} - ${endDate}`;
+      }
+    }
+
+    onFilterValueChange(value);
   }
 
-  private handleDatePickerChange = ({end: nextDate}: Range) => {
+  private handleDatePickerChange = ({start, end: nextDate}: Range) => {
     this.setState(
       {
-        selectedDate: new Date(nextDate),
+        selectedDate: new Date(start),
+        selectedEndDate: new Date(nextDate),
         userInputDate: undefined,
         userInputDateError: undefined,
       },
@@ -415,7 +505,17 @@ function getDateFilterOption(
   filterKey?: string,
   filterMinKey?: string,
   filterMaxKey?: string,
+  filterSpecificDateKey?: string,
+  filterSpecificRangeKey?: string,
 ) {
+  if (filterKey === filterSpecificRangeKey) {
+    return DateFilterOption.WithinSpecificRange;
+  }
+
+  if (filterKey === filterSpecificDateKey) {
+    return DateFilterOption.OnSpecificDate;
+  }
+
   if (filterKey === filterMaxKey) {
     return DateFilterOption.OnOrBefore;
   }
@@ -431,6 +531,7 @@ function stripTimeFromISOString(ISOString: string) {
   return ISOString.slice(0, 10);
 }
 
+// ({start, end}: Range) => {
 function formatDateForLocalTimezone(date: Date) {
   const timezoneOffset = date.getTimezoneOffset();
   const timezoneOffsetMs = timezoneOffset * 60 * 1000;

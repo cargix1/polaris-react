@@ -102,6 +102,8 @@ export class FilterValueSelector extends React.PureComponent<CombinedProps> {
             filterKey={filterKey}
             filterMinKey={filter.minKey}
             filterMaxKey={filter.maxKey}
+            filterSpecificDateKey={filter.specificDateKey}
+            filterSpecificRangeKey={filter.specificRangeKey}
             onFilterValueChange={onChange}
             onFilterKeyChange={onFilterKeyChange}
           />

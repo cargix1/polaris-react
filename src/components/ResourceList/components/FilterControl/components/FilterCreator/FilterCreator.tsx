@@ -113,7 +113,9 @@ export class FilterCreator extends React.PureComponent<CombinedProps, State> {
             <Select
               label={intl.translate(
                 'Polaris.ResourceList.FilterCreator.showAllWhere',
-                {resourceNamePlural: resourceName.plural.toLocaleLowerCase()},
+                {
+                  resourceNamePlural: resourceName.plural.toLocaleLowerCase(),
+                },
               )}
               placeholder={intl.translate(
                 'Polaris.ResourceList.FilterCreator.selectFilterKeyPlaceholder',
@@ -145,9 +147,22 @@ export class FilterCreator extends React.PureComponent<CombinedProps, State> {
 
   private handleFilterKeyChange = (filterKey: string) => {
     const {filters} = this.props;
-
     const foundFilter = filters.find((filter: any) => {
-      const {minKey, maxKey, operatorText} = filter;
+      const {
+        minKey,
+        maxKey,
+        specificDateKey,
+        specificRangeKey,
+        operatorText,
+      } = filter;
+
+      if (filterKey == specificRangeKey) {
+        return filter.key === filterKey || specificRangeKey === filterKey;
+      }
+
+      if (filterKey == specificDateKey) {
+        return filter.key === filterKey || specificDateKey === filterKey;
+      }
 
       if (minKey || maxKey) {
         return (
